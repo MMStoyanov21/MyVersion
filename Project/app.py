@@ -1,12 +1,15 @@
-from flask import Flask
+from app import create_app, db
+from flask.cli import with_appcontext
+import click
 
-app = Flask(__name__)
+app = create_app()
 
+@click.command(name='create_tables')
+@with_appcontext
+def create_tables():
+    db.create_all()
 
-@app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
+app.cli.add_command(create_tables)
 
-
-if __name__ == '__main__':
-    app.run()
+if __name__ == "__main__":
+    app.run(debug=True)
