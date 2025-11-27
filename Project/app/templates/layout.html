@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Product sells predictor{% endblock %}</title>
+    <style>
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: rgb(204, 237, 243);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: rgb(44, 145, 165);
+            padding: 10px 0 20px;
+            text-align: center;
+            color: #ffffff;
+            font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 50px;
+        }
+
+        a {
+            text-decoration: none;
+            color: white !important;
+            margin: 0 10px;
+            font-size: 20px;
+        }
+
+        .flash {
+            max-width: 600px;
+            margin: 1rem auto;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: #ffdddd;
+            color: #900;
+            border: 1px solid #d00;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        footer {
+            background-color: rgb(32, 120, 136);
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+
+
+        <h1>HOUSE PRICE REGRESSION</h1>
+        <nav>
+            <a href="/">Home</a>
+            {% if not session.get('is_admin') %}
+                <a href="/predict">Estimate Price</a>
+            {% endif %}
+
+            {% if session.get('is_admin') %}
+                <a href="{{ url_for('profiles.admin_dashboard') }}">Profiles</a>
+                <a href="/logout">Logout</a>
+            {% elif current_user.is_authenticated %}
+                <a href="{{ url_for('profile.view_profile') }}">Profile</a>
+                <a href="/logout">Logout</a>
+            {% else %}
+                <a href="/login">Login</a>
+                <a href="/register">Sign Up</a>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        &copy; 2025 House price regression
+    </footer>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% block content %}
+  <style>
+    .text-center h1 {
+      text-align: center;
+      color: #01262c;
+    }
+
+    .description-box {
+      background-color: rgb(167, 225, 236);
+      border-radius: 15px;
+      padding: 30px;
+      margin: 0 auto;
+      width: 80%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .description {
+      text-align: center;
+    }
+
+    .description h1 {
+      font-size: 40px;
+      margin-top: 20px;
+    }
+
+    .description p {
+      font-size: 20px;
+      line-height: 1.6;
+    }
+
+  </style>
+
+  <div class="text-center">
+
+    <h1>WELCOME</h1>
+    <div class="description-box">
+      <div class="description">
+        <h1>What we do?</h1>
+        <p>
+          We provide intelligent predictions for your housing estate, using data that you submit. By <br>
+          analyzing past trends based on color, product type, size, price, and sales <br>
+          volume, our system helps you forecast future performance and make <br>
+          informed business decisions.
+        </p>
+
+        <h1>How to use the predictor</h1>
+        <p>
+          Input a csv file containing the information about: color, type of product, <br>
+          size, price, sells. The information should be for the previous month which <br>
+          you can select from the dropdown menu in the predict page.
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

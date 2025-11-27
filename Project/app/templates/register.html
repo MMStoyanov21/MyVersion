@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<style>
+    .text-center h2 {
+        text-align: center;
+        color: #01262c;
+        font-size: 40px;
+        margin-top: 20px;
+    }
+
+    .register-box {
+        background-color: rgb(132, 209, 223);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 30px auto;
+        width: 60%;
+        max-width: 500px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+    }
+
+    .register-box form > div {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #01262c;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+    .btn-primary {
+        background-color: rgb(3, 78, 90);
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background-color: #056f80;
+    }
+</style>
+
+<div class="text-center">
+    <h2>Register</h2>
+    <div class="register-box">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div>
+                {{ form.username.label }}
+                {{ form.username(class="form-control") }}
+            </div>
+            <div>
+                {{ form.email.label }}
+                {{ form.email(class="form-control") }}
+            </div>
+            <div>
+                {{ form.password.label }}
+                {{ form.password(class="form-control") }}
+            </div>
+            <div>
+                {{ form.confirm_password.label }}
+                {{ form.confirm_password(class="form-control") }}
+            </div>
+            <div>
+                {{ form.submit(class="btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
