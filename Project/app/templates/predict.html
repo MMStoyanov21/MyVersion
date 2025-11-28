@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block title %}Predict{% endblock %}
+
+{% block content %}
+<style>
+    .text-center h2 {
+        text-align: center;
+        color: #082200;
+        font-size: 40px;
+        margin-top: 20px;
+    }
+
+    .predict-box {
+        background-color: rgb(243, 255, 239);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 30px auto;
+        width: 60%;
+        max-width: 600px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+    }
+
+    .predict-box form > div {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #082200;
+    }
+
+    input[type="file"],
+    select {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    button[type="submit"],
+    .url-button {
+        background-color: rgb(14, 62, 0);
+        color: white;
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+    }
+
+    button[type="submit"]:hover,
+    .url-button:hover {
+        background-color: #0f4d00;
+    }
+
+    .predict-instructions {
+        text-align: center;
+        font-size: 18px;
+        margin-bottom: 20px;
+        color: #082200;
+    }
+
+    .bottom-buttons {
+        text-align: center;
+        margin-top: 30px;
+    }
+</style>
+
+<div class="text-center">
+    <h2>Predict Product Sales</h2>
+    <div class="predict-box">
+        <form method="POST" enctype="multipart/form-data">
+            <div>
+                <label for="csv_file">Upload CSV:</label>
+                <input type="file" name="csv_file" id="csv_file" required>
+            </div>
+
+            <div>
+                <button type="submit">Upload & Continue</button>
+            </div>
+        </form>
+
+
+    </div>
+</div>
+{% endblock %}
