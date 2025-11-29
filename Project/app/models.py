@@ -3,7 +3,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db, login_manager
 from datetime import datetime
 
-# Load user for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))

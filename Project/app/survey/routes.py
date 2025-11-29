@@ -51,7 +51,7 @@ def predict_batch(df: pd.DataFrame, preprocessor, model) -> np.ndarray:
 def predict():
     upload_form = UploadCSVForm()
 
-    # Load model & preprocessor inside request context
+
     preprocessor, model = load_artifacts()
 
     if request.method == "POST":

@@ -28,7 +28,6 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     migrate.init_app(app, db)
 
-    # Move imports here to avoid circular import issues
     from app.auth.routes import auth
     from app.main.routes import main
     from app.survey.routes import survey
