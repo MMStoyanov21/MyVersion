@@ -1,119 +1,89 @@
-import os
+# predict_ames_nn.py
+# Usage: python predict_ames_nn.py
+
+import joblib
 import pandas as pd
 import numpy as np
-import joblib
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.compose import ColumnTransformer
-from sklearn.metrics import mean_squared_error
-from xgboost import XGBRegressor
+import torch
+from train_model import FFNN  # your same network architecture
+
+# -------------------------------
+# Load preprocessor and model
+# -------------------------------
+preprocessor = joblib.load("preprocessor.pkl")
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Build dummy row to infer final input dimension
+dummy = pd.DataFrame([{c: np.nan for c in preprocessor.feature_names_in_}])
+processed_dummy = preprocessor.transform(dummy)
+input_dim = processed_dummy.shape[1]
+
+# Reconstruct and load model
+model = FFNN(input_dim).to(device)
+model.load_state_dict(torch.load("house_model.pt", map_location=device))
+model.eval()
 
 
-# --- CONFIG ---
-BASE_DIR = os.path.dirname(__file__)
-CSV_PATH = os.path.join(BASE_DIR, "AmesHousing.csv")
-MODEL_PATH = os.path.join(BASE_DIR, "custom_model.pkl")
+# -------------------------------
+# Prediction Function
+# -------------------------------
+def predict_from_dict(feature_dict: dict) -> float:
+    """
+    Accepts a python dict with original Ames dataset columns.
+    Missing values are filled automatically by the preprocessor.
+    """
+
+    # Convert dict → DataFrame
+    df = pd.DataFrame([feature_dict])
+
+    # Ensure all expected columns exist
+    for col in preprocessor.feature_names_in_:
+        if col not in df.columns:
+            df[col] = np.nan
+
+    # Preprocess
+    X = preprocessor.transform(df)
+    X_tensor = torch.tensor(X, dtype=torch.float32).to(device)
+
+    # Predict
+    with torch.no_grad():
+        pred = model(X_tensor).cpu().numpy().flatten()[0]
+
+    return float(pred)
 
 
-# --- Feature Engineering ---
-def add_feature_engineering(df):
-    # Normalize column names
-    df.columns = [col.strip().lower().replace("-", "_").replace(" ", "_") for col in df.columns]
-
-    # Ensure required columns exist
-    required = {"type", "color", "price", "sells", "month"}
-    if not required.issubset(df.columns):
-        raise ValueError(f"CSV must contain columns: {required}. Found: {set(df.columns)}")
-
-    # Convert numeric columns
-    for col in ["price", "sells", "month"]:
-        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-
-    # Create previous_sells if missing
-    if "previous_sells" not in df.columns:
-        df = df.sort_values(by=['type', 'month'])
-        df['previous_sells'] = df.groupby('type')['sells'].shift(1)
-        df['previous_sells'] = df.groupby('type')['previous_sells'].transform(lambda x: x.fillna(x.median()))
-
-    # Create season from month
-    month_to_season = {
-        12: 'winter', 1: 'winter', 2: 'winter',
-        3: 'spring', 4: 'spring', 5: 'spring',
-        6: 'summer', 7: 'summer', 8: 'summer',
-        9: 'fall', 10: 'fall', 11: 'fall'
-    }
-    df['season'] = df['month'].map(month_to_season)
-
-    # Cyclical features
-    df['month_sin'] = np.sin(2 * np.pi * df['month'] / 12)
-    df['month_cos'] = np.cos(2 * np.pi * df['month'] / 12)
-
-    # Interaction feature
-    df['price_month_interaction'] = df['price'] * df['month']
-
-    return df
-
-
-# --- Training Function ---
-def train_model_from_csv(csv_path):
-    print(f"Loading training data from: {csv_path}")
-
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"Training CSV not found: {csv_path}")
-
-    df = pd.read_csv(csv_path)
-    df = add_feature_engineering(df)
-
-    target = "sells"
-    features = [col for col in df.columns if col != target]
-
-    X = df[features]
-    y = df[target]
-
-    # Separate categorical & numerical
-    categorical_features = X.select_dtypes(include=["object"]).columns.tolist()
-    numerical_features = X.select_dtypes(include=[np.number]).columns.tolist()
-
-    # Preprocessing
-    preprocessor = ColumnTransformer([
-        ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_features),
-        ("num", StandardScaler(), numerical_features)
-    ])
-
-    # Model
-    model = XGBRegressor(
-        n_estimators=200,
-        learning_rate=0.1,
-        max_depth=6,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        random_state=42
-    )
-
-    # Pipeline
-    pipeline = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", model)
-    ])
-
-    # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
-
-    print("Training model...")
-    pipeline.fit(X_train, y_train)
-
-    y_pred = pipeline.predict(X_test)
-
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-    print(f"RMSE: {rmse:.2f}")
-
-    # Save
-    joblib.dump({"model": pipeline, "columns": features}, MODEL_PATH)
-    print(f"✅ Model saved to: {MODEL_PATH}")
-
-
+# -------------------------------
+# Example usage
+# -------------------------------
 if __name__ == "__main__":
-    train_model_from_csv(CSV_PATH)
+    example_input = {
+        "MSSubClass": 20,
+        "MSZoning": "RL",
+        "LotFrontage": 60.0,
+        "LotArea": 8450,
+        "Street": "Pave",
+        "LotShape": "Reg",
+        "LandContour": "Lvl",
+        "Neighborhood": "CollgCr",
+        "OverallQual": 7,
+        "OverallCond": 5,
+        "YearBuilt": 2003,
+        "YearRemod/Add": 2003,
+        "1stFlrSF": 856,
+        "2ndFlrSF": 854,
+        "GrLivArea": 1710,
+        "FullBath": 2,
+        "BedroomAbvGr": 3,
+        "KitchenAbvGr": 1,
+        "KitchenQual": "Gd",
+        "TotRmsAbvGrd": 8,
+        "Fireplaces": 0,
+        "GarageCars": 2,
+        "GarageArea": 548,
+        "MoSold": 2,
+        "YrSold": 2010,
+    }
+
+    pred_price = predict_from_dict(example_input)
+    print(f"Predicted Sale Price: ${pred_price:,.2f}")

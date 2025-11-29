@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+
+{% block title %}Prediction Result{% endblock %}
+
+{% block content %}
+<style>
+    .text-center h2 {
+        text-align: center;
+        color: #01262c;
+        font-size: 40px;
+        margin-top: 20px;
+    }
+
+    .result-box {
+        background-color: rgb(132, 209, 223);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 30px auto;
+        width: 90%;
+        max-width: 1200px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+
+    .loss-summary {
+        background-color: #d7f3f9;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px auto;
+        width: 80%;
+        font-size: 18px;
+        color: #01262c;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .loss-summary strong {
+        color: #0a5460;
+    }
+
+    .result-box img {
+        max-width: 90%;
+        height: auto;
+        margin: 20px 0;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 40px;
+        text-decoration: none;
+        color: white;
+        background-color: rgb(3, 78, 90);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    .back-link:hover {
+        background-color: #067c8f;
+    }
+
+    .summary {
+        text-align: center;
+        font-size: 20px;
+        color: #01262c;
+        margin-top: 10px;
+    }
+
+    .summary strong {
+        color: #0a5460;
+    }
+</style>
+
+<div class="text-center">
+    <h2>House Price Prediction Summary</h2>
+
+    {% if product %}
+        <p class="summary">Predicted average price for <strong>{{ product }}</strong>:
+            <strong>${{ score }}</strong>
+        </p>
+    {% endif %}
+</div>
+
+<!-- NEW LOSS SUMMARY BOX -->
+{% if train_loss and val_loss %}
+<div class="loss-summary">
+    <p><strong>Final Training Loss:</strong> {{ train_loss }}</p>
+    <p><strong>Final Validation Loss:</strong> {{ val_loss }}</p>
+</div>
+{% endif %}
+
+<div class="result-box">
+    <h3>Training vs Validation Loss</h3>
+    <img src="{{ url_for('static', filename='ai_model/loss_curve.png') }}" alt="Training vs Validation Loss">
+
+    <h3>Actual vs Predicted Prices</h3>
+    <img src="{{ url_for('static', filename='ai_model/actual_vs_pred.png') }}" alt="Actual vs Predicted Prices">
+
+    <div class="back-button">
+        <a class="back-link" href="{{ url_for('survey.predict') }}">← Back to Upload</a>
+    </div>
+</div>
+
+{% endblock %}
