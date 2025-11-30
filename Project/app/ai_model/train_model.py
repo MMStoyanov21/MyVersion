@@ -25,6 +25,7 @@ class FFNN(nn.Module):
 
     def forward(self, x):
         return self.layers(x)
+
 class TabularDataset(Dataset):
     def __init__(self, X, y):
         self.X = torch.tensor(X, dtype=torch.float32)
@@ -37,8 +38,6 @@ class TabularDataset(Dataset):
         return self.X[idx], self.y[idx]
 
 if __name__ == "__main__":
-    print("Running training for Ames FFNN…")
-
     STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static", "ai_model")
     os.makedirs(STATIC_DIR, exist_ok=True)
 
@@ -55,35 +54,27 @@ if __name__ == "__main__":
         ("imputer", SimpleImputer(strategy="mean")),
         ("scaler", StandardScaler())
     ])
-
     cat_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="constant", fill_value="Missing")),
         ("ohe", OneHotEncoder(handle_unknown="ignore", sparse_output=False))
     ])
-
     preprocessor = ColumnTransformer([
         ("num", num_pipeline, numeric_cols),
         ("cat", cat_pipeline, categorical_cols)
     ])
-
     X_train_df, X_test_df, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
-
     preprocessor.fit(X_train_df)
     X_train = preprocessor.transform(X_train_df).astype(np.float32)
     X_test = preprocessor.transform(X_test_df).astype(np.float32)
-
     preprocessor_path = os.path.join(STATIC_DIR, "preprocessor.pkl")
     joblib.dump(preprocessor, preprocessor_path)
-    print(f"Saved: {preprocessor_path}")
 
     train_ds = TabularDataset(X_train, y_train)
     test_ds = TabularDataset(X_test, y_test)
-
     train_loader = DataLoader(train_ds, batch_size=64, shuffle=True)
     test_loader = DataLoader(test_ds, batch_size=64)
-
 
     input_dim = X_train.shape[1]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -99,7 +90,6 @@ if __name__ == "__main__":
     for epoch in range(epochs):
         model.train()
         batch_losses = []
-
         for xb, yb in train_loader:
             xb, yb = xb.to(device), yb.to(device)
             optimizer.zero_grad()
@@ -108,9 +98,7 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
             batch_losses.append(loss.item())
-
         train_losses.append(np.mean(batch_losses))
-
         model.eval()
         batch_val = []
         with torch.no_grad():
@@ -119,15 +107,11 @@ if __name__ == "__main__":
                 pred = model(xb)
                 loss = loss_fn(pred, yb)
                 batch_val.append(loss.item())
-
         val_losses.append(np.mean(batch_val))
-
         print(f"Epoch {epoch+1}/{epochs}  Train: {train_losses[-1]:.4f}  Val: {val_losses[-1]:.4f}")
-
 
     model_path = os.path.join(STATIC_DIR, "house_model.pt")
     torch.save(model.state_dict(), model_path)
-    print(f"Saved: {model_path}")
 
     loss_path = os.path.join(STATIC_DIR, "loss_curve.png")
     plt.figure(figsize=(7,5))
@@ -140,22 +124,17 @@ if __name__ == "__main__":
     plt.savefig(loss_path)
     plt.close()
 
-
     model.eval()
     with torch.no_grad():
         preds = model(torch.tensor(X_test, device=device)).cpu().numpy().flatten()
 
     actual_vs_pred_path = os.path.join(STATIC_DIR, "actual_vs_pred.png")
     plt.figure(figsize=(7.5,6))
-    plt.scatter(y_test, preds, alpha=0.5)
+    plt.scatter(y_test, y_test, color='green', alpha=0.5, label='Actual')
+    plt.scatter(y_test, preds, color='blue', alpha=0.5, label='Predicted')
     plt.xlabel("Actual Price")
-    plt.ylabel("Predicted Price")
+    plt.ylabel("Price")
     plt.title("Actual vs Predicted Sale Price")
+    plt.legend()
     plt.savefig(actual_vs_pred_path)
     plt.close()
-
-    print("Training finished. Files saved:")
-    print(f"- {preprocessor_path}")
-    print(f"- {model_path}")
-    print(f"- {loss_path}")
-    print(f"- {actual_vs_pred_path}")
