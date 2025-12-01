@@ -71,6 +71,17 @@
     .summary strong {
         color: #0a5460;
     }
+    .big-score {
+        font-size: 48px;
+        color: #0a5460;
+        font-weight: 900;
+        background: #d9f4ff;
+        padding: 10px 25px;
+        border-radius: 12px;
+        display: inline-block;
+        margin-top: 15px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
 </style>
 
 <div class="text-center">
@@ -78,7 +89,8 @@
 
     {% if product %}
         <p class="summary">Predicted average price for <strong>{{ product }}</strong>:
-            <strong>${{ score }}</strong>
+            <br><strong class="big-score">${{ score }}</strong>
+
         </p>
     {% endif %}
 </div>
